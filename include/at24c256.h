@@ -25,12 +25,11 @@ int8_t eeprom_write_byte(uint16_t address_dst, uint8_t data);
  * @return 0 - операция успешно завершена
  * @return -1 - ошибка обмена по I2C
  */
-int8_t eeprom_read_byte(uint16_t address_src, uint8_t *res);
+int8_t eeprom_read(uint16_t address_src, uint8_t *res, size_t length);
 
 
 int8_t eeprom_write(uint16_t address_dst, const uint8_t *data, size_t length);
 
-int8_t eeprom_read(uint16_t address_src, uint8_t *data, size_t length);
 
 int8_t eeprom_write_page(uint16_t address_dst, const uint8_t *data, size_t lenght);
 

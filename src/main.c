@@ -5,9 +5,9 @@
 
 int main(void)
 {
+    i2c_init();
 
     while (1) {
-        
     }
-    
+
 }
