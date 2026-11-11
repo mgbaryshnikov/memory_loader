@@ -6,7 +6,7 @@
 #include <stddef.h>
 
 #define UART_TIMEOUT  1000000U
-
+#define UART_STRING_TIMEOUT 100000000U
 
 void uart_init(void);
 

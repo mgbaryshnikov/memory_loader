@@ -19,8 +19,7 @@ void uart_init(void) {
     
 }
 
-static int8_t uart_wait_flag(usart_flag_enum flag) {
-    uint16_t timeout = UART_TIMEOUT;
+static int8_t uart_wait_flag(usart_flag_enum flag, uint32_t timeout) {
 
     while (usart_flag_get(USART0, flag) == RESET) {
         if (--timeout == 0U) return -1;
@@ -31,7 +30,7 @@ static int8_t uart_wait_flag(usart_flag_enum flag) {
 
 
 int8_t uart_send_byte(uint8_t byte) {
-    if (uart_wait_flag(USART_FLAG_TBE) != 0) return -1;
+    if (uart_wait_flag(USART_FLAG_TBE, UART_TIMEOUT) != 0) return -1;
 
     usart_data_transmit(USART0, byte);
 
@@ -39,7 +38,7 @@ int8_t uart_send_byte(uint8_t byte) {
 }
 
 int8_t uart_get_byte(uint8_t *buffer) {
-    if (uart_wait_flag(USART_FLAG_RBNE) != 0) return -1;
+    if (uart_wait_flag(USART_FLAG_RBNE, UART_STRING_TIMEOUT) != 0) return -1;
 
     *buffer = usart_data_receive(USART0);
 
