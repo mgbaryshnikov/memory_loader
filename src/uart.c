@@ -61,3 +61,12 @@ int8_t uart_get_string(char *buffer, size_t buffer_size) {
     *buffer = '\0';
     return -2;
 }
+
+int8_t uart_send_string(char *buffer, size_t buffer_size) {
+    int8_t status = 0;
+    while (buffer_size-- > 0 && *buffer != '\0') {
+        status = uart_send_byte((uint8_t)*buffer++);
+        if (status != 0) return -1;
+    }
+    return 0;
+}

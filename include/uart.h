@@ -16,4 +16,6 @@ int8_t uart_get_byte(uint8_t *buffer);
 
 int8_t uart_get_string(char *buffer, size_t buffer_size);
 
+int8_t uart_send_string(char *buffer, size_t buffer_size);
+
 #endif

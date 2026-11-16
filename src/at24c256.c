@@ -158,26 +158,43 @@ int8_t eeprom_read(uint16_t address_src, uint8_t *data, size_t length)
         return i2c_error_handler();
     }
 
-    
-    i2c_flag_clear(I2C0, I2C_FLAG_ADDSEND);
-    i2c_ack_config(I2C0, I2C_ACK_ENABLE);
-    
-    for (size_t i = 0; i < length - 1; i++) {
+    if (length == 1U) {
+        i2c_ack_config(I2C0, I2C_ACK_DISABLE);
+        i2c_flag_clear(I2C0, I2C_FLAG_ADDSEND);
+        delay_ms(1);
+
+        i2c_stop_on_bus(I2C0);
+
         if (i2c_wait_flag(I2C_FLAG_RBNE) != 0) {
             return i2c_error_handler();
         }
-        *data++ = i2c_data_receive(I2C0);
+
+        *data = i2c_data_receive(I2C0);
+    }
+
+    else {
+        i2c_flag_clear(I2C0, I2C_FLAG_ADDSEND);
+        i2c_ack_config(I2C0, I2C_ACK_ENABLE);
+        delay_ms(1);
         
-    }
+        for (size_t i = 0; i < length - 1; i++) {
+            if (i2c_wait_flag(I2C_FLAG_RBNE) != 0) {
+                return i2c_error_handler();
+            }
+            *data++ = i2c_data_receive(I2C0);
+            
+        }
 
-    i2c_ack_config(I2C0, I2C_ACK_DISABLE);
-    i2c_stop_on_bus(I2C0);
+        i2c_ack_config(I2C0, I2C_ACK_DISABLE);
+        i2c_stop_on_bus(I2C0);
 
-    if (i2c_wait_flag(I2C_FLAG_RBNE) != 0) {
-        return i2c_error_handler();
-    }
-    *data = i2c_data_receive(I2C0);
-
+        if (i2c_wait_flag(I2C_FLAG_RBNE) != 0) {
+            return i2c_error_handler();
+        }
+        *data = i2c_data_receive(I2C0);
+        
+        i2c_flag_clear(I2C0, I2C_FLAG_ADDSEND);
+        }
     i2c_ack_config(I2C0, I2C_ACK_ENABLE);
 
     return 0;
@@ -189,12 +206,16 @@ int8_t eeprom_write(uint16_t address_dst, const uint8_t *data, size_t length) {
     int8_t write_status;
 
     size_t first_page_bytes = EEPROM_PAGE_SIZE - address_dst % EEPROM_PAGE_SIZE;
+
+    if (first_page_bytes > length) first_page_bytes = length;
+
     write_status = eeprom_write_page(address_dst, data, first_page_bytes);
     if (write_status != 0) return -1;
     delay_ms(5);
 
     address_dst += first_page_bytes;
     data += first_page_bytes;
+    if (length < first_page_bytes) return 0;
     length -= first_page_bytes;
 
     size_t pages_left = length / 64;
