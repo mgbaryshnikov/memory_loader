@@ -9,7 +9,7 @@ int main(void)
 {
     char buffer[64];
     char outcome_buffer[64];
-    int8_t status = 100;
+    volatile int8_t status = 100;
     command_t cmd;
     
     i2c_init();
@@ -23,11 +23,31 @@ int main(void)
                 switch (cmd.command)
                 {
                 case CMD_READ:
-                    eeprom_read(cmd.address, outcome_buffer, 1);
+                    status = eeprom_read(cmd.address, outcome_buffer, cmd.length);
+                    if (status == 0) {
+                        uart_send_string(outcome_buffer, cmd.length);
+                    }
+                    else {
+                        uart_send_string("Error\0\n", 8);
+                    }
                     break;
                 case CMD_WRITE:
-                    eeprom_write(cmd.address, &cmd.value, 1);
+                    status = eeprom_write(cmd.address, cmd.value_arr, cmd.length);
+                    if (status == 0) {
+                        uart_send_string("Success!\0\n", 11);
+                    }
+                    else {
+                        uart_send_string("Error\0\n", 8);
+                    }
                     break;
+                case CMD_WRITE_STR:
+                    status = eeprom_write(cmd.address, cmd.value_arr, cmd.length);
+                    if (status == 0) {
+                        uart_send_string("Success!\0\n", 11);
+                    } 
+                    else {
+                        uart_send_string("Error\0\n", 8);
+                    }
                 default:
                     break;
                 }
